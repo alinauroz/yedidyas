@@ -34,23 +34,33 @@ builder.queryField('subscribers', (t) =>
 builder.mutationField('addSubscriber', (t) => 
   t.prismaField({
     // return an object of type Subscriber
+    errors: {
+      types: [Error]
+    },
     type: 'Subscriber',
     // arguments of the mutation
     args: {
       input: t.arg({
         type: CreateSubscriberInput,
-        required: true
+        required: true 
       })
     },
     // resolver for the mutation. creates a subscriber in database
     resolve: async (query, _parent, _args, _ctx, _info) => {
       try {
-        return prisma.subscriber.create({ data: {
+        const data = await prisma.subscriber.create({ data: {
          ..._args.input,
          createdAt: new Date(),
          updatedAt: new Date(), 
         }});
-      }catch (err) {}
+        return data;
+      } catch (err) {
+        let errMessage = "";
+        if (err?.message?.indexOf("Unique constraint failed on the fields: (`email`)") > -1) {
+          errMessage = "Email should be unique";
+        }
+        throw new Error(errMessage || err?.message || "Unknown error");
+      }
     }
   })
 );
