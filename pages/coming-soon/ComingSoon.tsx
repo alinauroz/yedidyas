@@ -27,10 +27,16 @@ const CREATE_SUBSCRIBER = gql`
     addSubscriber(
       input: { email: $email, language: $language, country: $country }
     ) {
-      id
-      email
-      language
-      country
+      ... on Error {
+        message
+      }
+      ... on MutationAddSubscriberSuccess {
+        data {
+          email
+          language
+          country
+        }
+      }
     }
   }
 `
